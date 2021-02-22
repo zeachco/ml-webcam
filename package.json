@@ -1,0 +1,13 @@
+{
+  "name": "ml-trainning",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Olivier <zeachco@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^11.3.2"
+  },
+  "scripts": {
+    "start": "serve public"
+  }
+}
