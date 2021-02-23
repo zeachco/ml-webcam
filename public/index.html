@@ -1,19 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
     <title>ML Training</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- p5 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.0.0/p5.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.0.0/addons/p5.sound.min.js"></script> -->
+    <!-- ml5 -->
     <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
 
-</head>
-<body>
-
+  <body>
     <script>
-        // Your code will go here
-        // open up your console - if everything loaded properly you should see the correct version number
-        console.log('ml5 version:', ml5.version);
-      </script>    
-</body>
+      console.log('ml5 version:', ml5.version)
+      let video,
+        classifier,
+        count = 0
+      const cache = new Map()
+      const DECAY = 0.9
+
+      const result = document.createElement('div')
+      result.style.cssText =
+        'position:fixed;top:0;right:0;padding:.2em 1em;background:#fffa'
+
+      function gotResults(err, results) {
+        requestAnimationFrame(() => {
+          classifier.predict(gotResults)
+        })
+        if (err) return
+        count++
+        results.forEach((r) => {
+          const val = cache.get(r.label)
+          if (val !== undefined) {
+            cache.set(r.label, val + r.confidence)
+          } else {
+            cache.set(r.label, r.confidence)
+          }
+        })
+        result.innerHTML = cache
+          .toJSON()
+          .sort((a, b) => b[1] - a[1])
+          .map(([label, val]) => {
+            cache.set(label, val * DECAY)
+            const ratio = val / count
+            count *= DECAY
+            if (val < 0.01) {
+              return ''
+              // cache.delete(label)
+            }
+            return `<p>${label} ${Math.round(ratio * 100) / 10}%</p>`
+          })
+          .join('')
+      }
+
+      function setup() {
+        createCanvas(640, 480)
+        video = createCapture(VIDEO)
+        video.hide()
+        // video.size(32, 240)
+        background(0)
+        classifier = ml5.imageClassifier('MobileNet', video, modelLoaded)
+        classifier.predict(gotResults)
+        document.body.appendChild(result)
+      }
+
+      function draw() {
+        image(video, 0, 0)
+      }
+
+      // When the model is loaded
+      function modelLoaded() {
+        console.log('Model Loaded!')
+      }
+
+      function modelReady() {
+        console.log(this)
+      }
+
+      // Make a prediction with a selected image
+      //   classifier.classify(document.getElementById('image'), (err, results) => {
+      //     console.log(results)
+      //   })
+    </script>
+  </body>
 </html>

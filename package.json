@@ -5,6 +5,7 @@
   "author": "Olivier <zeachco@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "@types/p5": "^0.9.1",
     "serve": "^11.3.2"
   },
   "scripts": {
